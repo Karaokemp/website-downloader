@@ -1,10 +1,18 @@
 const fs = require('fs');
 const ytdl = require('ytdl-core');
 
+const db = require('./db');
+
 exports.download = function(song,cb){
-    fileName = `${song.title}.mp4`;
+    let fileName = `${slugify(song.title)}.mp4`;
+    console.log(`file name: ${fileName}`);
+
     let download = ytdl(`https://www.youtube.com/watch?v=${song.id}`,{quality: 'highest', filter: (format) => format.container === 'mp4'})
     .pipe(fs.createWriteStream(fileName));
+
+    download.on('error', function(err) {
+        console.log("ERROR:" + err);
+      });    
     
     download.on('finish', function(){
         console.log('downloaded!');
@@ -17,5 +25,28 @@ exports.download = function(song,cb){
     
     }
 
-    let song = {title:'Karaoke The Bad Touch',id:'AUjmpbd-U2Q'};
-exports.download(song);
+    exports.downloadAll = function(songs){
+        for(let song of songs){
+            console.log(`downloading ${song.title}`);
+            exports.download(song);
+        }
+    }
+
+const _slugify_strip_re = /[^\w\s-]/g;
+const _slugify_hyphenate_re = /[-\s]+/g;
+function slugify(s) {
+  s = s.replace(_slugify_strip_re, '').trim().toLowerCase();
+  s = s.replace(_slugify_hyphenate_re, ' ');
+  return s;
+}
+
+    db.getSongRequests((err,requests)=>{
+        if(err){
+            console.error(err);
+        }else{
+             exports.downloadAll(requests);
+            }
+
+        });
+        
+    
