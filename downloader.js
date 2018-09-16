@@ -5,8 +5,6 @@ const db = require('./db');
 
 exports.download = function(song,cb){
     let fileName = `${slugify(song.title)}.mp4`;
-    console.log(`file name: ${fileName}`);
-
     let download = ytdl(`https://www.youtube.com/watch?v=${song.id}`,{quality: 'highest', filter: (format) => format.container === 'mp4'})
     .pipe(fs.createWriteStream(fileName));
 
@@ -32,10 +30,11 @@ exports.download = function(song,cb){
         }
     }
 
-const _slugify_strip_re = /[^\w\s-]/g;
-const _slugify_hyphenate_re = /[-\s]+/g;
+
 function slugify(s) {
-  s = s.replace(_slugify_strip_re, '').trim().toLowerCase();
+    const _slugify_strip_re = /[^\w\s-]/g;
+    const _slugify_hyphenate_re = /[-\s]+/g;
+  s = s.replace(_slugify_strip_re, '').trim();
   s = s.replace(_slugify_hyphenate_re, ' ');
   return s;
 }
