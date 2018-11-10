@@ -3,8 +3,11 @@ const ytdl = require('ytdl-core');
 
 const db = require('./db');
 
+const DIR_NAME = 'בקשות';
+fs.mkdirSync(DIR_NAME);
+
 exports.download = function(song,cb){
-    let fileName = `${slugify(song.title)}.mp4`;
+    let fileName = `${DIR_NAME}/${slugify(song.title)}.mp4`;
     let download = ytdl(`https://www.youtube.com/watch?v=${song.id}`,{quality: 'highest', filter: (format) => format.container === 'mp4'})
     .pipe(fs.createWriteStream(fileName));
 
