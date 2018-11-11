@@ -9,20 +9,25 @@ if (!fs.existsSync(DIR_NAME)){
 }
 exports.download = function(song,cb){
     let fileName = `${DIR_NAME}/${slugify(song.title)}.mp4`;
-    let download = ytdl(`https://www.youtube.com/watch?v=${song.id}`,{quality: 'highest', filter: (format) => format.container === 'mp4'})
-    .pipe(fs.createWriteStream(fileName));
+    if(!fs.existsSync(fileName)){
 
-    download.on('error', function(err) {
-        console.log("ERROR:" + err);
-      });    
+        let download = ytdl(`https://www.youtube.com/watch?v=${song.id}`,{quality: 'highest', filter: (format) => format.container === 'mp4'})
+        .pipe(fs.createWriteStream(fileName));
     
-    download.on('finish', function(){
-        console.log('downloaded!');
-        const stats = fs.statSync(fileName);
-        const fileSizeInBytes = stats.size;
-        console.log(`got ${fileSizeInBytes} bytes.`);
+        download.on('error', function(err) {
+            console.log("ERROR:" + err);
+          });    
         
-    });
+        download.on('finish', function(){
+            console.log('downloaded!');
+            const stats = fs.statSync(fileName);
+            const fileSizeInBytes = stats.size;
+            console.log(`got ${fileSizeInBytes} bytes.`);
+            
+        });
+        
+    }
+   
     
     
     }
