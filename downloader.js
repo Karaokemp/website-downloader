@@ -4,8 +4,9 @@ const ytdl = require('ytdl-core');
 const db = require('./db');
 
 const DIR_NAME = 'בקשות';
-fs.mkdirSync(DIR_NAME);
-
+if (!fs.existsSync(DIR_NAME)){
+    fs.mkdirSync(DIR_NAME);
+}
 exports.download = function(song,cb){
     let fileName = `${DIR_NAME}/${slugify(song.title)}.mp4`;
     let download = ytdl(`https://www.youtube.com/watch?v=${song.id}`,{quality: 'highest', filter: (format) => format.container === 'mp4'})
