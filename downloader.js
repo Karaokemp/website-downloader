@@ -7,7 +7,7 @@ const DIR_NAME = 'בקשות';
 if (!fs.existsSync(DIR_NAME)){
     fs.mkdirSync(DIR_NAME);
 }
-exports.download = function(song,cb){
+exports.download = async function(song,cb){
     let fileName = `${DIR_NAME}/${slugify(song.title)}.mp4`;
     if(!fs.existsSync(fileName)){
 
@@ -32,10 +32,10 @@ exports.download = function(song,cb){
     
     }
 
-    exports.downloadAll = function(songs){
+    exports.downloadAll = async function(songs){
         for(let song of songs){
             console.log(`downloading ${song.title}`);
-            exports.download(song);
+            await exports.download(song);
         }
     }
 
