@@ -7,24 +7,28 @@ const DIR_NAME = 'בקשות';
 if (!fs.existsSync(DIR_NAME)){
     fs.mkdirSync(DIR_NAME);
 }
-exports.download = async function(song,cb){
+const download = async function(song,cb){
     let fileName = `${DIR_NAME}/${slugify(song.title)}.mp4`;
     if(!fs.existsSync(fileName)){
 
-        let download = ytdl(`https://www.youtube.com/watch?v=${song.id}`,{quality: 'highest', filter: (format) => format.container === 'mp4'})
-        .pipe(fs.createWriteStream(fileName));
-    
-        download.on('error', function(err) {
-            console.log("ERROR:" + err);
-          });    
-        
-        download.on('finish', function(){
-            console.log('downloaded!');
-            const stats = fs.statSync(fileName);
-            const fileSizeInBytes = stats.size;
-            console.log(`got ${fileSizeInBytes} bytes.`);
+        try {
+            let download = await ytdl(`https://www.youtube.com/watch?v=${song.id}`,{quality: 'highest', filter: (format) => format.container === 'mp4'})
+                .pipe(fs.createWriteStream(fileName));
+
+            download.on('error', function(err) {
+                console.log("ERROR:" + err);
+              });    
             
-        });
+            download.on('finish', function(){
+                console.log('downloaded!');
+                const stats = fs.statSync(fileName);
+                const fileSizeInBytes = stats.size;
+                console.log(`got ${fileSizeInBytes} bytes.`);
+                
+            });
+        } catch(error) {
+            console.error('Failed to download', fileName, error);
+        }
         
     }
    
@@ -32,12 +36,14 @@ exports.download = async function(song,cb){
     
     }
 
-    exports.downloadAll = async function(songs){
-        for(let song of songs){
+const downloadAll = async function(songs){
+    for(let song of songs){
+        if (song.title) {
             console.log(`downloading ${song.title}`);
-            await exports.download(song);
+            await download(song);
         }
     }
+}
 
 
 function slugify(s) {
@@ -48,13 +54,12 @@ function slugify(s) {
   return s;
 }
 
-    db.getSongRequests((err,requests)=>{
-        if(err){
+db.getSongRequests((err,requests)=>{
+    if(err){
             console.error(err);
-        }else{
-             exports.downloadAll(requests);
-            }
-
-        });
+    }else{
+        downloadAll(requests);
+    }
+});
         
     
