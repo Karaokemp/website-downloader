@@ -4,7 +4,7 @@
   "description": "",
   "main": "downloader",
   "scripts": {
-    "start": "node downloader.js",
+    "start": "node downloader.js > downloader.log",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "dreckguy@gmail.com",
