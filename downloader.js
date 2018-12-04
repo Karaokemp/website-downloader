@@ -3,33 +3,34 @@ const ytdl = require('ytdl-core');
 
 const db = require('./db');
 
-const DIR_NAME = 'בקשות';
+const DIR_NAME = 'requests';
 if (!fs.existsSync(DIR_NAME)){
     fs.mkdirSync(DIR_NAME);
 }
 const download = async function(song,cb){
     let fileName = `${DIR_NAME}/${slugify(song.title)}.mp4`;
     if(!fs.existsSync(fileName)){
-
         try {
-            let download = await ytdl(`https://www.youtube.com/watch?v=${song.id}`,{quality: 'highest', filter: (format) => format.container === 'mp4'})
-                .pipe(fs.createWriteStream(fileName));
-
-            download.on('error', function(err) {
-                console.log("ERROR:" + err);
-              });    
-            
-            download.on('finish', function(){
-                console.log('downloaded!');
-                const stats = fs.statSync(fileName);
-                const fileSizeInBytes = stats.size;
-                console.log(`got ${fileSizeInBytes} bytes.`);
+            const videoUrl = `https://www.youtube.com/watch?v=${song.id}`;
+            let info = await ytdl.getBasicInfo(videoUrl);
+            console.log('Got info for ', song.title, '. ' + JSON.stringify(info));
+            if (info) {
+                let download = await ytdl(videoUrl,{quality: 'highest', filter: (format) => format.container === 'mp4'})
+                    .pipe(fs.createWriteStream(fileName));
+                download.on('error', function(err) {
+                    console.log("ERROR:" + err);
+                    });    
                 
-            });
+                download.on('finish', function(){
+                    console.log('downloaded!');
+                    const stats = fs.statSync(fileName);
+                    const fileSizeInBytes = stats.size;
+                    console.log(`got ${fileSizeInBytes} bytes.`);
+                });
+            }
         } catch(error) {
             console.error('Failed to download', fileName, error);
         }
-        
     }
    
     
