@@ -39,10 +39,14 @@ const download = async function(song,cb){
 
 const downloadAll = async function(songs){
     for(let song of songs){
-        if (song.title) {
-            console.log(`downloading ${song.title}`);
-            await download(song);
-        }
+        await handleSong(song);
+    }
+}
+
+async function handleSong(params) {
+    if (song.title) {
+        console.log(`downloading ${song.title}`);
+        await download(song);
     }
 }
 
