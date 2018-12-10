@@ -7,48 +7,113 @@ const DIR_NAME = 'requests';
 if (!fs.existsSync(DIR_NAME)){
     fs.mkdirSync(DIR_NAME);
 }
-const download = async function(song,cb){
-    let fileName = `${DIR_NAME}/${slugify(song.title)}.mp4`;
-    if(!fs.existsSync(fileName)){
-        try {
+ function download(song){
+     console.log(`title: ${song.title}`);
+     if(!song.title){
+         song.title =`TITLE-ME ${song.id}`;
+     }
+     if(!song.id){
+         song.id = 'oVbXpK_BRbw' // bohemian raphsody
+         song.title = 'ERASE-ME!';
+         }
+         let fileName = `${DIR_NAME}/${slugify(song.title)}.mp4`;
+        if(!fs.existsSync(fileName)){
             const videoUrl = `https://www.youtube.com/watch?v=${song.id}`;
-            let info = await ytdl.getBasicInfo(videoUrl);
-            console.log('Got info for ', song.title, '. ' + JSON.stringify(info));
-            if (info) {
-                let download = await ytdl(videoUrl,{quality: 'highest', filter: (format) => format.container === 'mp4'})
-                    .pipe(fs.createWriteStream(fileName));
-                download.on('error', function(err) {
-                    console.log("ERROR:" + err);
-                    });    
-                
-                download.on('finish', function(){
-                    console.log('downloaded!');
-                    const stats = fs.statSync(fileName);
-                    const fileSizeInBytes = stats.size;
-                    console.log(`got ${fileSizeInBytes} bytes.`);
-                });
-            }
-        } catch(error) {
-            console.error('Failed to download', fileName, error);
+            let download = ytdl(videoUrl,{quality: 'highest', filter: (format) => format.container === 'mp4'})
+            .pipe(fs.createWriteStream(fileName));
+
+            download.on('error', function(err) {
+                console.log(`got error on file ${fileName}`);
+                console.error(err);
+                });    
+            
+            download.on('finish', function(){
+                console.log(`downloaded file ${fileName}`);
+                const stats = fs.statSync(fileName);
+                const fileSizeInBytes = stats.size;
+                console.log(`got ${fileSizeInBytes} bytes.`);
+            });
+
+        }else{
+            console.log(`skipping file ${fileName} - exists allready!`);
         }
-    }
-   
-    
-    
-    }
 
-const downloadAll = async function(songs){
-    for(let song of songs){
-        await handleSong(song);
-    }
-}
 
-async function handleSong(params) {
-    if (song.title) {
-        console.log(`downloading ${song.title}`);
-        await download(song);
-    }
-}
+ }
+
+ function downloadP(song){
+     return new Promise((resolve, reject)=>{
+
+        if(!song.title){
+            song.title =`TITLE-ME ${song.id}`;
+        }
+        if(!song.id){
+            song.id = 'oVbXpK_BRbw' // bohemian raphsody
+            song.title = 'ERASE-ME!';
+            }
+
+            let fileName = `${DIR_NAME}/${slugify(song.title)}.mp4`;
+        if(!fs.existsSync(fileName)){
+            const videoUrl = `https://www.youtube.com/watch?v=${song.id}`;
+            let download = ytdl(videoUrl,{quality: 'highest', filter: (format) => format.container === 'mp4'})
+            .pipe(fs.createWriteStream(fileName));
+
+            download.on('error', function(err) {
+                console.log(`got error on file ${fileName}`);
+                reject(fileName);
+                });    
+            
+            download.on('finish', function(){
+                console.log(`downloaded file ${fileName}`);
+                const stats = fs.statSync(fileName);
+                const fileSizeInBytes = stats.size;
+                console.log(`got ${fileSizeInBytes} bytes.`);
+                resolve(fileName);
+            });
+
+        }else{
+            console.log(`skipping file ${fileName} - exists allready!`);
+        }
+
+            
+
+
+
+     });
+ }
+
+ function downloadAll(songs){
+     console.log('All!');
+     const tasks = songs.map(download);
+     return tasks.reduce((promiseChain, currentTask) => {
+        return promiseChain.then(chainResults =>
+            currentTask.then(currentResult =>
+                [ ...chainResults, currentResult ]
+            )
+        ).catch(chainErrors =>
+            currentError.catch(currentError =>
+                [ ...chainErrors, currentError ]
+            )
+        );
+    }, Promise.resolve([])).then(results => {
+
+        console.log('finished!')
+        for(let result of results){
+            console.log(result);
+        }
+
+
+        
+
+    }).catch(issues=>{
+        for(let issue of issues){
+            console.error(issue);
+        }
+    });
+
+
+ }
+
 
 
 function slugify(s) {
@@ -59,11 +124,18 @@ function slugify(s) {
   return s;
 }
 
-db.getSongRequests((err,requests)=>{
+db.getSongRequests((err,songs)=>{
     if(err){
             console.error(err);
     }else{
-        downloadAll(requests);
+
+        downloadAll(songs);
+
+        
+
+        
+        
+        
     }
 });
         
