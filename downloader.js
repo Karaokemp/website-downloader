@@ -1,5 +1,7 @@
 const fs = require('fs');
 const ytdl = require('ytdl-core');
+const sanitize = require("sanitize-filename");
+
 
 const db = require('./db');
 
@@ -16,7 +18,7 @@ if (!fs.existsSync(DIR_NAME)){
          song.id = 'oVbXpK_BRbw' // bohemian raphsody
          song.title = 'ERASE-ME!';
          }
-         let fileName = `${DIR_NAME}/${slugify(song.title)}.mp4`;
+         let fileName = `${DIR_NAME}/${sanitize(song.title)}.mp4`;
         if(!fs.existsSync(fileName)){
             const videoUrl = `https://www.youtube.com/watch?v=${song.id}`;
             let download = ytdl(videoUrl,{quality: 'highest', filter: (format) => format.container === 'mp4'})
@@ -52,7 +54,7 @@ if (!fs.existsSync(DIR_NAME)){
             song.title = 'ERASE-ME!';
             }
 
-            let fileName = `${DIR_NAME}/${slugify(song.title)}.mp4`;
+            let fileName = `${DIR_NAME}/${sanitize(song.title)}.mp4`;
         if(!fs.existsSync(fileName)){
             const videoUrl = `https://www.youtube.com/watch?v=${song.id}`;
             let download = ytdl(videoUrl,{quality: 'highest', filter: (format) => format.container === 'mp4'})
@@ -114,15 +116,6 @@ if (!fs.existsSync(DIR_NAME)){
 
  }
 
-
-
-function slugify(s) {
-    const _slugify_strip_re = /[^\w\s-]/g;
-    const _slugify_hyphenate_re = /[-\s]+/g;
-  s = s.replace(_slugify_strip_re, '').trim();
-  s = s.replace(_slugify_hyphenate_re, ' ');
-  return s;
-}
 
 db.getSongRequests((err,songs)=>{
     if(err){
